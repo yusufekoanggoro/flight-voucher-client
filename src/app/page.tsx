@@ -3,15 +3,17 @@
 import { useState } from 'react'
 import DatePicker from 'react-datepicker'
 import 'react-datepicker/dist/react-datepicker.css'
+import type { FormState, CheckRequest, GenerateRequest, CheckResponse, GenerateResponse } from './types/form'
 
 export default function Home() {
-  const [form, setForm] = useState({
+  const [form, setForm] = useState<FormState>({
     crewName: '',
     crewId: '',
     flightNumber: '',
     flightDate: new Date(),
     aircraftType: 'ATR',
   })
+
   const [seats, setSeats] = useState<string[]>([])
   const [message, setMessage] = useState('')
 
@@ -36,27 +38,34 @@ export default function Home() {
     setSeats([])
     setMessage('Sedang memeriksa...')
 
+    const checkPayload: CheckRequest = {
+      flightNumber: form.flightNumber,
+      date: formatDate(form.flightDate),
+    }
+
     const resCheck = await fetch('http://localhost:8080/api/check', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        flightNumber: form.flightNumber,
-        flightDate: formatDate(form.flightDate),
-      }),
+      body: JSON.stringify(checkPayload),
     })
 
-    const check = await resCheck.json()
+    const check: CheckResponse = await resCheck.json()
 
     if (check.exists) {
       setMessage('Voucher untuk penerbangan ini sudah pernah dibuat.')
     } else {
+      const generatePayload: GenerateRequest = {
+        name: form.crewName,
+        id: form.crewId,
+        flightNumber: form.flightNumber,
+        date: formatDate(form.flightDate),
+        aircraft: form.aircraftType,
+      }
+
       const resGenerate = await fetch('http://localhost:8080/api/generate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          ...form,
-          flightDate: formatDate(form.flightDate),
-        }),
+        body: JSON.stringify(generatePayload),
       })
 
       if (!resGenerate.ok) {
@@ -67,7 +76,7 @@ export default function Home() {
         return
       }
 
-      const data = await resGenerate.json()
+      const data: GenerateResponse = await resGenerate.json()
       setSeats(data.seats || [])
       setMessage('Voucher berhasil dibuat!')
     }
