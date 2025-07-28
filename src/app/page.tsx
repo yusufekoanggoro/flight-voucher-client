@@ -36,7 +36,7 @@ export default function Home() {
 
   const handleSubmit = async () => {
     setSeats([])
-    setMessage('Sedang memeriksa...')
+    setMessage('Checking...')
 
     const checkPayload: CheckRequest = {
       flightNumber: form.flightNumber,
@@ -52,7 +52,7 @@ export default function Home() {
     const check: CheckResponse = await resCheck.json()
 
     if (check.exists) {
-      setMessage('Voucher untuk penerbangan ini sudah pernah dibuat.')
+      setMessage('A voucher for this flight already exists.')
     } else {
       const generatePayload: GenerateRequest = {
         name: form.crewName,
@@ -70,7 +70,7 @@ export default function Home() {
 
       if (!resGenerate.ok) {
         const errorData = await resGenerate.json().catch(() => ({}))
-        const errorMessage = errorData.message || 'Gagal membuat voucher'
+        const errorMessage = errorData.message || 'Failed to create voucher.'
         setMessage(errorMessage)
         setSeats([])
         return
@@ -78,36 +78,36 @@ export default function Home() {
 
       const data: GenerateResponse = await resGenerate.json()
       setSeats(data.seats || [])
-      setMessage('Voucher berhasil dibuat!')
+      setMessage('Voucher created successfully!')
     }
   }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100 p-6">
       <div className="w-full max-w-md bg-white rounded-xl shadow-md p-6 space-y-4">
-        <h1 className="text-2xl font-bold text-center">Buat Voucher Penerbangan</h1>
+        <h1 className="text-2xl font-bold text-center">Create Flight Voucher</h1>
 
         <input
           name="crewName"
-          placeholder="Nama Kru"
+          placeholder="Crew Name"
           className="w-full px-4 py-2 border rounded-md"
           onChange={handleChange}
         />
         <input
           name="crewId"
-          placeholder="ID Kru"
+          placeholder="Crew ID"
           className="w-full px-4 py-2 border rounded-md"
           onChange={handleChange}
         />
         <input
           name="flightNumber"
-          placeholder="Nomor Penerbangan"
+          placeholder="Flight Number"
           className="w-full px-4 py-2 border rounded-md"
           onChange={handleChange}
         />
 
         <div>
-          <label className="block mb-1 text-sm text-gray-700">Tanggal Penerbangan</label>
+          <label className="block mb-1 text-sm text-gray-700">Flight Date</label>
           <DatePicker
             selected={form.flightDate}
             onChange={handleDateChange}
@@ -131,14 +131,14 @@ export default function Home() {
           onClick={handleSubmit}
           className="w-full bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700"
         >
-          Buat Voucher
+          Generate Vouchers
         </button>
 
         {message && <p className="text-center text-gray-700">{message}</p>}
 
         {seats.length > 0 && (
           <div className="text-center">
-            <p className="font-semibold">Kursi:</p>
+            <p className="font-semibold">Seats:</p>
             <ul className="space-y-1">
               {seats.map((seat, i) => (
                 <li key={i} className="text-lg text-gray-800">{seat}</li>
